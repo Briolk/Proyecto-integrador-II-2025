@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ingeniería en Sistemas - Registro de Estudiantes | Universidad Salesiana</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: rgb(7, 31, 140);">
+        <div class="container-fluid">
+            <!-- Logo y nombre -->
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <img src="{% static 'images/log.png' %}" alt="Logo" width="40" height="40" class="d-inline-block align-text-top me-2">
+                <span class="fw-bold fs-5" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+                    Univ. Salesiana - Ing. Sistemas
+                </span>
+            </a>
+    
+            <!-- Botón para colapsar en pantallas pequeñas -->
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
+                    data-bs-target="#navbarNav" aria-controls="navbarNav" 
+                    aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+    
+            <!-- Menú de navegación -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="/inicio/">Inicio</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/estudiante/">Estudiantes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/docente/">Docentes</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Contacto</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="container mt-4">
+        <div class="text-center">
+            <h1 class="display-5 fw-bold" style="color: #07418C;">Registro de Estudiantes</h1>
+            <p class="lead">Carrera de Ingeniería en Sistemas - Universidad Salesiana</p>
+        </div>
+    </header>
+
+    <main class="container mt-4"> 
+    <div class="card shadow-sm mb-4">
+        <div class="card-header text-white" style="background-color: #07418C;">
+            <h5 class="mb-0">Formulario de Registro</h5>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <div class="d-grid">
+                    <button type="submit" class="btn" style="background-color: #07418C; color: white;">Registrar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+        <div class="card shadow-sm">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Lista de Estudiantes Registrados</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Apellido</th>
+                            <th>Correo Electrónico</th>
+                            <th>Docente Guía</th>
+                            <th>Docente Relator</th>
+                            <th>Asignar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for estudiante in estudiantes %}
+                        <tr>
+                            <td>{{ estudiante.nombre }}</td>
+                            <td>{{ estudiante.apellido }}</td>
+                            <td>{{ estudiante.email }}</td>
+                            <td>
+                                {% if estudiante.docente_guia %}
+                                    {{ estudiante.docente_guia.nombre }} {{ estudiante.docente_guia.apellido }}
+                                {% else %}
+                                    <span class="text-muted">No asignado</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if estudiante.docente_relator %}
+                                    {{ estudiante.docente_relator.nombre }} {{ estudiante.docente_relator.apellido }}
+                                {% else %}
+                                    <span class="text-muted">No asignado</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form method="post" action="{% url 'asignar_docente' estudiante.id %}">
+                                    {% csrf_token %}
+                                    <select name="docente_guia" class="form-control mb-1" required>
+                                        <option value="">Docente Guía</option>
+                                        {% for docente in docentes %}
+                                            <option value="{{ docente.id }}">{{ docente.nombre }} {{ docente.apellido }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <select name="docente_relator" class="form-control mb-1" required>
+                                        <option value="">Docente Relator</option>
+                                        {% for docente in docentes %}
+                                            <option value="{{ docente.id }}">{{ docente.nombre }} {{ docente.apellido }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="submit" class="btn btn-sm btn-primary">Asignar</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">No hay estudiantes registrados.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mt-5">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0">Progreso de los Proyectos</h5>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-striped mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Estudiante</th>
+                            <th>Etapa</th>
+                            <th>Completado</th>
+                            <th>Fecha</th>
+                            <th>Marcar Completado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for progreso in progresos %}
+                        <tr>
+                            <td>{{ progreso.estudiante.nombre }} {{ progreso.estudiante.apellido }}</td>
+                            <td>{{ progreso.etapa }}</td>
+                            <td>
+                                {% if progreso.completado %}
+                                    ✅
+                                {% else %}
+                                    ❌
+                                {% endif %}
+                            </td>
+                            <td>{{ progreso.fecha|default:"-" }}</td>
+                            <td>
+                                {% if not progreso.completado %}
+                                <form method="post" action="{% url 'marcar_etapa_completada' progreso.id %}">
+                                    {% csrf_token %}
+                                    <button class="btn btn-sm btn-success">Marcar</button>
+                                </form>
+                                {% else %}
+                                    <span class="text-muted">Completado</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted">No hay registros de progreso aún.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+
+
+    </main>
+
+
+
+        <div class="text-end mt-4">
+            <a href="/docente/" class="btn btn-outline-primary">Ir al Registro de Docentes</a>
+        </div>
+    </main>
+
+    <footer class="text-center mt-5 py-3" style="background-color:#f7d023; font-weight: bold; font-style: italic; color: #07418C;">
+        <small>&copy; 2025 Carrera de Ingeniería en Sistemas - Universidad Salesiana</small>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+
+
